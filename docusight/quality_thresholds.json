@@ -1,0 +1,384 @@
+{
+ "cer_target": 0.05,
+ "benefit_pp": 0.01,
+ "evidence": {
+  "noise_sigma": [
+   {
+    "recipe": "clean",
+    "sigma": 0.0,
+    "cer_raw": 0.0,
+    "cer_enh": null
+   },
+   {
+    "recipe": "gauss_n2",
+    "sigma": 1.9768,
+    "cer_raw": 0.0006,
+    "cer_enh": 0.0015
+   },
+   {
+    "recipe": "gauss_n4",
+    "sigma": 3.9536,
+    "cer_raw": 0.0,
+    "cer_enh": 0.0
+   },
+   {
+    "recipe": "gauss_n6",
+    "sigma": 5.9304,
+    "cer_raw": 0.0006,
+    "cer_enh": 0.0
+   },
+   {
+    "recipe": "gauss_n8",
+    "sigma": 7.9072,
+    "cer_raw": 0.0,
+    "cer_enh": 0.0
+   },
+   {
+    "recipe": "gauss_n12",
+    "sigma": 11.9226,
+    "cer_raw": 0.0,
+    "cer_enh": 0.0015
+   },
+   {
+    "recipe": "gauss_n16",
+    "sigma": 15.8144,
+    "cer_raw": 0.002,
+    "cer_enh": 0.002
+   },
+   {
+    "recipe": "poisson600",
+    "sigma": 9.7604,
+    "cer_raw": 0.0,
+    "cer_enh": 0.0
+   },
+   {
+    "recipe": "poisson150",
+    "sigma": 18.656,
+    "cer_raw": 0.002,
+    "cer_enh": 0.002
+   }
+  ],
+  "blur_edge_width": [
+   {
+    "recipe": "clean",
+    "ew": 0.7979,
+    "cer_raw": 0.0,
+    "cer_enh": null
+   },
+   {
+    "recipe": "gblur0.5",
+    "ew": 0.8297,
+    "cer_raw": 0.0,
+    "cer_enh": 0.0
+   },
+   {
+    "recipe": "gblur1.0",
+    "ew": 0.9815,
+    "cer_raw": 0.002,
+    "cer_enh": 0.0006
+   },
+   {
+    "recipe": "gblur1.5",
+    "ew": 1.2313,
+    "cer_raw": 0.0424,
+    "cer_enh": 0.0026
+   },
+   {
+    "recipe": "gblur2.0",
+    "ew": 1.403,
+    "cer_raw": 0.045,
+    "cer_enh": 0.0435
+   },
+   {
+    "recipe": "gblur3.0",
+    "ew": 2.4399,
+    "cer_raw": 0.2364,
+    "cer_enh": 0.1927
+   }
+  ],
+  "motion_blur_not_covered": [
+   {
+    "recipe": "motion3",
+    "ew": 0.8511,
+    "cer_raw": 0.0006,
+    "cer_enh": 0.0
+   },
+   {
+    "recipe": "motion5",
+    "ew": 0.9398,
+    "cer_raw": 0.032,
+    "cer_enh": 0.0063
+   },
+   {
+    "recipe": "motion9",
+    "ew": 0.9144,
+    "cer_raw": 0.4197,
+    "cer_enh": 0.3844
+   },
+   {
+    "recipe": "motion15",
+    "ew": 1.2961,
+    "cer_raw": 0.5265,
+    "cer_enh": 0.5583
+   }
+  ],
+  "text_height_px": [
+   {
+    "recipe": "clean",
+    "text_h": 13.5,
+    "cer_raw": 0.0,
+    "cer_enh": null
+   },
+   {
+    "recipe": "lowres0.75",
+    "text_h": 10.5,
+    "cer_raw": 0.0,
+    "cer_enh": null
+   },
+   {
+    "recipe": "lowres0.5",
+    "text_h": 7.0,
+    "cer_raw": 0.0026,
+    "cer_enh": null
+   },
+   {
+    "recipe": "lowres0.35",
+    "text_h": 5.5,
+    "cer_raw": 0.027,
+    "cer_enh": null
+   },
+   {
+    "recipe": "lowres0.25",
+    "text_h": 4.0,
+    "cer_raw": 0.352,
+    "cer_enh": null
+   }
+  ],
+  "glare_fraction": [
+   {
+    "recipe": "clean",
+    "glare": 0.0,
+    "cer_raw": 0.0,
+    "cer_enh": null
+   },
+   {
+    "recipe": "glare0.5",
+    "glare": 0.1519,
+    "cer_raw": 0.0,
+    "cer_enh": null
+   },
+   {
+    "recipe": "glare1.0",
+    "glare": 0.2157,
+    "cer_raw": 0.0048,
+    "cer_enh": null
+   },
+   {
+    "recipe": "glare2.0",
+    "glare": 0.299,
+    "cer_raw": 0.1138,
+    "cer_enh": null
+   }
+  ],
+  "glare_text_loss": [
+   {
+    "recipe": "glare0.5",
+    "glare_ratio": 0.328,
+    "cer_raw": 0.0,
+    "cer_enh": null
+   },
+   {
+    "recipe": "glare1.0",
+    "glare_ratio": 0.258,
+    "cer_raw": 0.0048,
+    "cer_enh": null
+   },
+   {
+    "recipe": "glare2.0",
+    "glare_ratio": 0.209,
+    "cer_raw": 0.1138,
+    "cer_enh": null
+   }
+  ],
+  "illumination_unevenness": [
+   {
+    "recipe": "clean",
+    "unevenness": 1.0,
+    "cer_raw": 0.0,
+    "cer_enh": null
+   },
+   {
+    "recipe": "shadow0.3",
+    "unevenness": 1.3656,
+    "cer_raw": 0.0,
+    "cer_enh": null
+   },
+   {
+    "recipe": "shadow0.5",
+    "unevenness": 1.8428,
+    "cer_raw": 0.0,
+    "cer_enh": null
+   },
+   {
+    "recipe": "shadow0.7",
+    "unevenness": 2.574,
+    "cer_raw": 0.0,
+    "cer_enh": null
+   }
+  ],
+  "impulse_fraction": [
+   {
+    "recipe": "clean",
+    "impulse": 0.0,
+    "cer_raw": 0.0,
+    "cer_enh": null
+   },
+   {
+    "recipe": "sp0.005",
+    "impulse": 0.0049,
+    "cer_raw": 0.025,
+    "cer_enh": 0.0026
+   },
+   {
+    "recipe": "sp0.03",
+    "impulse": 0.0293,
+    "cer_raw": 0.0613,
+    "cer_enh": 0.0232
+   }
+  ],
+  "darkness": [
+   {
+    "recipe": "clean",
+    "paper": 222.5,
+    "cer_raw": 0.0,
+    "cer_enh": null
+   },
+   {
+    "recipe": "dark0.6",
+    "paper": 133.5,
+    "cer_raw": 0.0006,
+    "cer_enh": null
+   },
+   {
+    "recipe": "dark0.4",
+    "paper": 88.5,
+    "cer_raw": 0.0006,
+    "cer_enh": null
+   },
+   {
+    "recipe": "dark0.25",
+    "paper": 55.5,
+    "cer_raw": 0.0,
+    "cer_enh": null
+   }
+  ]
+ },
+ "noise_sigma": {
+  "score": "sigma",
+  "enhance_above": null,
+  "enhance_stops_helping_above": null,
+  "retake_above": null,
+  "retake_raw_above": null
+ },
+ "blur_edge_width": {
+  "score": "ew",
+  "enhance_above": 1.0370808501371926,
+  "enhance_stops_helping_above": 1.3648117148617014,
+  "retake_above": 1.4480355975201327,
+  "retake_raw_above": 1.430073091017349
+ },
+ "text_height_px": {
+  "score": "text_h",
+  "retake_below": 5.393701076695413,
+  "cer_at_lowest_tested": 0.35196486852230213
+ },
+ "glare_fraction": {
+  "score": "glare",
+  "enhance_above": null,
+  "enhance_stops_helping_above": null,
+  "retake_above": 0.25021441281520473,
+  "retake_raw_above": 0.25021441281520473
+ },
+ "glare_text_loss": {
+  "score": "glare_ratio",
+  "retake_below": 0.23747109004267059
+ },
+ "illumination_unevenness": {
+  "score": "unevenness",
+  "enhance_above": null,
+  "enhance_stops_helping_above": null,
+  "retake_above": null,
+  "retake_raw_above": null
+ },
+ "impulse_fraction": {
+  "score": "impulse",
+  "enhance_above": 0.0021880009797660147,
+  "enhance_stops_helping_above": null,
+  "retake_above": null,
+  "retake_raw_above": 0.021657486466697694
+ },
+ "darkness": {
+  "score": "paper",
+  "retake_below": null,
+  "cer_at_lowest_tested": 0.0
+ },
+ "clean_cer": 0.0,
+ "derived_from": {
+  "script": "scripts/quality_vs_cer.py",
+  "calibration_set": "data\\quality_calib",
+  "pages": [
+   "eval_bank_statement_v1",
+   "eval_invoice_v2"
+  ],
+  "n_images": 76,
+  "recipes": [
+   "blur1.0_noise16",
+   "blur2.0_noise8",
+   "clean",
+   "dark0.25",
+   "dark0.4",
+   "dark0.6",
+   "gauss_n12",
+   "gauss_n16",
+   "gauss_n2",
+   "gauss_n4",
+   "gauss_n6",
+   "gauss_n8",
+   "gblur0.5",
+   "gblur1.0",
+   "gblur1.5",
+   "gblur2.0",
+   "gblur3.0",
+   "glare0.5",
+   "glare1.0",
+   "glare2.0",
+   "jpeg15",
+   "jpeg50",
+   "lowres0.25",
+   "lowres0.35",
+   "lowres0.5",
+   "lowres0.75",
+   "motion15",
+   "motion3",
+   "motion5",
+   "motion9",
+   "periodic4",
+   "poisson150",
+   "poisson600",
+   "shadow0.3",
+   "shadow0.5",
+   "shadow0.7",
+   "sp0.005",
+   "sp0.03"
+  ],
+  "ocr_engine": "paddleocr",
+  "date": "2026-11-02"
+ },
+ "hints": {
+  "periodic_peak": 1731.423469543457,
+  "impulse_fraction": 0.0009777446944510704,
+  "jpeg_blockiness": 1.1591848731040955,
+  "sigma_visible": 1.5,
+  "fitted_on": "quality_calib_tune (165 images)"
+ }
+}

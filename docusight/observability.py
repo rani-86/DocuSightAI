@@ -66,6 +66,8 @@ class Metrics:
         self.inc("docusight_documents_total", doc_type=result.doc_type)
         if result.needs_review:
             self.inc("docusight_review_flagged_total", doc_type=result.doc_type)
+        if result.quality is not None:
+            self.inc("docusight_quality_decisions_total", decision=result.quality.decision, doc_type=result.doc_type)
         for issue in result.issues:
             self.inc("docusight_validation_issues_total", code=issue.code, doc_type=result.doc_type)
         for stage, ms in result.timings_ms.items():

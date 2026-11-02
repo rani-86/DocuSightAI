@@ -4,11 +4,19 @@ Reports classification F1 (fine-tuned transformer vs TF-IDF vs keyword, all on
 real OCR text), field-level accuracy, field- and page-level CER, table
 row/cell accuracy, review-routing quality, confidence calibration and latency.
 
-    python scripts/evaluate.py --data data/test
+    python scripts/evaluate.py --data data/test                         # pre-DIQA ("legacy") gates -> reports/eval_report.md
+    python scripts/evaluate.py --mode v2 --per-type 20                  # calibrated DIQA gate, stratified 80-doc subset
+    python scripts/evaluate.py --mode v2 --disable-steps denoise,clahe  # ablation of individual preprocessing steps
+
+The legacy configuration keeps its original output names (reports/predictions, reports/eval_report.*) so the published headline numbers
+stay reproducible; every other configuration writes to reports/predictions_<tag> and reports/eval_report_<tag>.*.
+OCR results are additionally cached by the hash of the preprocessed image (reports/ocr_cache), so configurations that leave a page's pixels
+unchanged do not re-run OCR.
 """
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import json
 import sys
 import time
@@ -26,6 +34,7 @@ from docusight import DOC_TYPES  # noqa: E402
 from docusight.classifier import KeywordDocClassifier, SK_FILE, SklearnDocClassifier, load_classifier  # noqa: E402
 from docusight.config import settings  # noqa: E402
 from docusight.metrics import cer_counts, field_match, table_scores  # noqa: E402
+from docusight.ocr import CachedEngine  # noqa: E402
 from docusight.pipeline import DocumentPipeline  # noqa: E402
 from docusight.schemas import ExtractionResult  # noqa: E402
 from docusight.synth import load_labels  # noqa: E402
@@ -33,12 +42,37 @@ from docusight.templates import SCHEMAS  # noqa: E402
 from docusight.validation import review_decision, validate  # noqa: E402
 
 
-def run_predictions(records, data_dir: Path, cache_dir: Path) -> None:
+def config_tag(mode: str, disable) -> str:
+    """'legacy' = the original pipeline (its outputs keep the original file names)."""
+    if mode == "legacy" and not disable:
+        return "legacy"
+    return mode + ("_off-" + "-".join(sorted(disable)) if disable else "")
+
+
+def make_pipeline(mode: str, disable, ocr_cache: str | None) -> DocumentPipeline:
+    cfg = dataclasses.replace(settings, diqa_mode=mode, preprocess_disable=tuple(disable))
+    pipe = DocumentPipeline(cfg=cfg)
+    if ocr_cache:
+        pipe.engine = CachedEngine(pipe.engine, ocr_cache)
+    return pipe
+
+
+def stratified_subset(records, per_type: int):
+    """`per_type` documents of each type, evenly spread over the degradation range (deterministic)."""
+    out = []
+    for t in DOC_TYPES:
+        rs = sorted((r for r in records if r["doc_type"] == t), key=lambda r: (r["degrade_level"], r["doc_id"]))
+        idx = np.unique(np.linspace(0, len(rs) - 1, min(per_type, len(rs))).round().astype(int))
+        out += [rs[i] for i in idx]
+    return out
+
+
+def run_predictions(records, data_dir: Path, cache_dir: Path, pipe: DocumentPipeline | None = None) -> None:
     cache_dir.mkdir(parents=True, exist_ok=True)
     todo = [r for r in records if not (cache_dir / f"{r['doc_id']}.json").exists()]
     if not todo:
         return
-    pipe = DocumentPipeline()
+    pipe = pipe or DocumentPipeline()
     t0 = time.time()
     for i, rec in enumerate(todo, 1):
         img = cv2.imread(str(data_dir / rec["image"]))
@@ -65,7 +99,8 @@ def evaluate(records, cache_dir: Path, model_dir: Path) -> dict:
     # Re-run validation on cached OCR/extraction so rule or threshold changes can be
     # evaluated offline without repeating OCR.
     for res in results.values():
-        res.issues = validate(res.doc_type, res.doc_type_confidence, res.fields, res.tables)
+        kept = [i for i in res.issues if i.code == "IMAGE_QUALITY"]  # produced by the DIQA gate at inference time, not by validate()
+        res.issues = validate(res.doc_type, res.doc_type_confidence, res.fields, res.tables) + kept
         res.needs_review, res.review_reasons = review_decision(res.issues)
 
     # ---------------- classification (all models scored on the same OCR text)
@@ -150,7 +185,7 @@ def evaluate(records, cache_dir: Path, model_dir: Path) -> dict:
         "injected_anomalies": {k: sum(d["anomaly"] == k for d in anomalies) for k in ("inconsistent", "missing")},
         "auto_approved_docs_fully_correct": pct(np.mean([d["errors"] == 0 and d["class_ok"] for d in auto])) if auto else None,
         "reason_counts": {k: sum(k in d["reasons"] for d in doc_rows) for k in
-                          ("MISSING_REQUIRED", "LOW_CONFIDENCE", "FORMAT_INVALID", "INCONSISTENT", "LOW_CLASS_CONFIDENCE")},
+                          ("MISSING_REQUIRED", "LOW_CONFIDENCE", "FORMAT_INVALID", "INCONSISTENT", "LOW_CLASS_CONFIDENCE", "IMAGE_QUALITY")},
     }
 
     stages = defaultdict(list)
@@ -220,16 +255,26 @@ def main() -> None:
     ap.add_argument("--data", default="data/test")
     ap.add_argument("--out", default="reports")
     ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--per-type", type=int, default=0, help="stratified subset: N docs per document type (spread over degradation level)")
+    ap.add_argument("--mode", choices=["legacy", "v2"], default="legacy", help="preprocessing gate (legacy = pre-DIQA, reproduces the published numbers)")
+    ap.add_argument("--disable-steps", default="", help="comma list of steps to switch off: perspective,deskew,despike,denoise,deblur,clahe")
+    ap.add_argument("--ocr-cache", default="reports/ocr_cache", help="disk cache of OCR output keyed by preprocessed-image hash ('' to disable)")
     args = ap.parse_args()
     data_dir, out = Path(args.data), Path(args.out)
     records = load_labels(data_dir)
+    if args.per_type:
+        records = stratified_subset(records, args.per_type)
     if args.limit:
         records = records[:: max(1, len(records) // args.limit)][: args.limit]
+    disable = [x for x in args.disable_steps.split(",") if x]
+    tag = config_tag(args.mode, disable)
+    suffix = "" if tag == "legacy" else f"_{tag}"
     load_classifier.cache_clear()
-    run_predictions(records, data_dir, out / "predictions")
-    rep = evaluate(records, out / "predictions", settings.model_dir)
-    (out / "eval_report.json").write_text(json.dumps(rep, indent=2))
-    (out / "eval_report.md").write_text(to_markdown(rep), encoding="utf-8")
+    run_predictions(records, data_dir, out / f"predictions{suffix}", make_pipeline(args.mode, disable, args.ocr_cache or None))
+    rep = evaluate(records, out / f"predictions{suffix}", settings.model_dir)
+    rep["config"] = {"mode": args.mode, "disabled_steps": disable, "per_type": args.per_type or None, "tag": tag}
+    (out / f"eval_report{suffix}.json").write_text(json.dumps(rep, indent=2))
+    (out / f"eval_report{suffix}.md").write_text(to_markdown(rep), encoding="utf-8")
     print(to_markdown(rep))
 
 
