@@ -1,0 +1,27 @@
+# Core ML / CV
+torch>=2.4
+transformers>=4.45
+scikit-learn>=1.5
+opencv-python-headless>=4.10
+numpy>=1.26
+pillow>=10.0
+rapidfuzz>=3.9
+joblib>=1.4
+
+# OCR
+paddlepaddle>=3.0
+paddleocr>=3.0
+
+# Serving
+fastapi>=0.115
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9
+pydantic>=2.7
+
+# Optional
+# pypdfium2      # PDF uploads
+# pytesseract    # Tesseract fallback engine (DOCUSIGHT_OCR_ENGINE=tesseract)
+
+# Dev
+pytest>=8.0
+httpx>=0.27

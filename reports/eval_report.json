@@ -1,0 +1,1068 @@
+{
+  "dataset": {
+    "docs": 220,
+    "per_type": {
+      "bank_statement": 55,
+      "invoice": 55,
+      "payslip": 55,
+      "kyc_id": 55
+    },
+    "ocr_engine": "paddleocr"
+  },
+  "classification": {
+    "pipeline": {
+      "macro_f1": 1.0,
+      "per_class_f1": {
+        "bank_statement": 1.0,
+        "invoice": 1.0,
+        "payslip": 1.0,
+        "kyc_id": 1.0
+      },
+      "model": "hf_transformer",
+      "confusion_matrix": {
+        "labels": [
+          "bank_statement",
+          "invoice",
+          "payslip",
+          "kyc_id"
+        ],
+        "matrix": [
+          [
+            55,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            55,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            55,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            55
+          ]
+        ]
+      }
+    },
+    "tfidf_logreg": {
+      "macro_f1": 1.0,
+      "per_class_f1": {
+        "bank_statement": 1.0,
+        "invoice": 1.0,
+        "payslip": 1.0,
+        "kyc_id": 1.0
+      }
+    },
+    "keyword": {
+      "macro_f1": 1.0,
+      "per_class_f1": {
+        "bank_statement": 1.0,
+        "invoice": 1.0,
+        "payslip": 1.0,
+        "kyc_id": 1.0
+      }
+    }
+  },
+  "fields": {
+    "overall_accuracy": 97.42,
+    "n_fields": 1320,
+    "by_doc_type": {
+      "bank_statement": {
+        "accuracy": 96.67,
+        "n": 330
+      },
+      "invoice": {
+        "accuracy": 96.62,
+        "n": 385
+      },
+      "kyc_id": {
+        "accuracy": 100.0,
+        "n": 220
+      },
+      "payslip": {
+        "accuracy": 97.4,
+        "n": 385
+      }
+    },
+    "by_field": {
+      "bank_statement.account_holder": {
+        "accuracy": 98.18,
+        "n": 55
+      },
+      "bank_statement.account_number": {
+        "accuracy": 98.18,
+        "n": 55
+      },
+      "bank_statement.closing_balance": {
+        "accuracy": 98.18,
+        "n": 55
+      },
+      "bank_statement.ifsc": {
+        "accuracy": 92.73,
+        "n": 55
+      },
+      "bank_statement.opening_balance": {
+        "accuracy": 98.18,
+        "n": 55
+      },
+      "bank_statement.statement_period": {
+        "accuracy": 94.55,
+        "n": 55
+      },
+      "invoice.gstin": {
+        "accuracy": 100.0,
+        "n": 55
+      },
+      "invoice.invoice_date": {
+        "accuracy": 100.0,
+        "n": 55
+      },
+      "invoice.invoice_number": {
+        "accuracy": 100.0,
+        "n": 55
+      },
+      "invoice.subtotal": {
+        "accuracy": 94.55,
+        "n": 55
+      },
+      "invoice.tax_amount": {
+        "accuracy": 94.55,
+        "n": 55
+      },
+      "invoice.total_amount": {
+        "accuracy": 90.91,
+        "n": 55
+      },
+      "invoice.vendor_name": {
+        "accuracy": 96.36,
+        "n": 55
+      },
+      "kyc_id.date_of_birth": {
+        "accuracy": 100.0,
+        "n": 55
+      },
+      "kyc_id.father_name": {
+        "accuracy": 100.0,
+        "n": 55
+      },
+      "kyc_id.id_number": {
+        "accuracy": 100.0,
+        "n": 55
+      },
+      "kyc_id.name": {
+        "accuracy": 100.0,
+        "n": 55
+      },
+      "payslip.employee_id": {
+        "accuracy": 85.45,
+        "n": 55
+      },
+      "payslip.employee_name": {
+        "accuracy": 100.0,
+        "n": 55
+      },
+      "payslip.gross_earnings": {
+        "accuracy": 100.0,
+        "n": 55
+      },
+      "payslip.net_pay": {
+        "accuracy": 100.0,
+        "n": 55
+      },
+      "payslip.pan": {
+        "accuracy": 96.36,
+        "n": 55
+      },
+      "payslip.pay_period": {
+        "accuracy": 100.0,
+        "n": 55
+      },
+      "payslip.total_deductions": {
+        "accuracy": 100.0,
+        "n": 55
+      }
+    },
+    "by_degradation": {
+      "heavy": {
+        "accuracy": 98.61,
+        "n": 431
+      },
+      "light": {
+        "accuracy": 99.4,
+        "n": 334
+      },
+      "medium": {
+        "accuracy": 95.32,
+        "n": 555
+      }
+    },
+    "by_layout_variant": {
+      "bank_statement.v0": {
+        "accuracy": 99.12,
+        "n": 114
+      },
+      "bank_statement.v1": {
+        "accuracy": 92.59,
+        "n": 108
+      },
+      "bank_statement.v2": {
+        "accuracy": 98.15,
+        "n": 108
+      },
+      "invoice.v0": {
+        "accuracy": 100.0,
+        "n": 133
+      },
+      "invoice.v1": {
+        "accuracy": 98.41,
+        "n": 126
+      },
+      "invoice.v2": {
+        "accuracy": 91.27,
+        "n": 126
+      },
+      "kyc_id.v0": {
+        "accuracy": 100.0,
+        "n": 76
+      },
+      "kyc_id.v1": {
+        "accuracy": 100.0,
+        "n": 72
+      },
+      "kyc_id.v2": {
+        "accuracy": 100.0,
+        "n": 72
+      },
+      "payslip.v0": {
+        "accuracy": 98.5,
+        "n": 133
+      },
+      "payslip.v1": {
+        "accuracy": 99.21,
+        "n": 126
+      },
+      "payslip.v2": {
+        "accuracy": 94.44,
+        "n": 126
+      }
+    },
+    "by_extraction_method": {
+      "below": {
+        "accuracy": 99.45,
+        "n": 181
+      },
+      "regex": {
+        "accuracy": 0.0,
+        "n": 6
+      },
+      "right": {
+        "accuracy": 98.68,
+        "n": 532
+      },
+      "same_segment": {
+        "accuracy": 99.83,
+        "n": 577
+      }
+    },
+    "accuracy_by_confidence": {
+      "0.80-0.95": {
+        "accuracy": 100.0,
+        "n": 44
+      },
+      "<0.80": {
+        "accuracy": 22.22,
+        "n": 9
+      },
+      ">=0.95": {
+        "accuracy": 99.36,
+        "n": 1243
+      }
+    }
+  },
+  "cer": {
+    "field_value_cer": 0.0205,
+    "page_cer": 0.01
+  },
+  "tables": {
+    "bank_statement": {
+      "row_exact": 90.79,
+      "cell_acc": 92.24,
+      "row_count_ok": 90.91,
+      "n_docs": 55
+    },
+    "invoice": {
+      "row_exact": 90.3,
+      "cell_acc": 92.92,
+      "row_count_ok": 90.91,
+      "n_docs": 55
+    },
+    "payslip": {
+      "row_exact": 100.0,
+      "cell_acc": 100.0,
+      "row_count_ok": 100.0,
+      "n_docs": 55
+    }
+  },
+  "review_routing": {
+    "docs": 220,
+    "flag_rate": 24.09,
+    "straight_through_rate": 75.91,
+    "problem_docs": 56,
+    "problem_recall": 85.71,
+    "flag_precision": 90.57,
+    "injected_anomaly_recall": 100.0,
+    "injected_anomalies": {
+      "inconsistent": 17,
+      "missing": 9
+    },
+    "auto_approved_docs_fully_correct": 95.21,
+    "reason_counts": {
+      "MISSING_REQUIRED": 23,
+      "LOW_CONFIDENCE": 11,
+      "FORMAT_INVALID": 1,
+      "INCONSISTENT": 26,
+      "LOW_CLASS_CONFIDENCE": 0
+    }
+  },
+  "latency": {
+    "preprocess": {
+      "p50_ms": 83.4,
+      "p95_ms": 103.9
+    },
+    "ocr": {
+      "p50_ms": 7190.4,
+      "p95_ms": 13375.2
+    },
+    "layout": {
+      "p50_ms": 0.3,
+      "p95_ms": 0.4
+    },
+    "classify": {
+      "p50_ms": 4.8,
+      "p95_ms": 8.0
+    },
+    "extract": {
+      "p50_ms": 9.9,
+      "p95_ms": 14.4
+    },
+    "validate": {
+      "p50_ms": 0.1,
+      "p95_ms": 0.1
+    },
+    "total": {
+      "p50_ms": 7289.7,
+      "p95_ms": 13483.3
+    }
+  },
+  "settings": {
+    "field_conf_threshold": 0.8,
+    "class_conf_threshold": 0.7
+  },
+  "failures": [
+    {
+      "doc_id": "test_bank_statement_0001",
+      "anomaly": null,
+      "errors": 1,
+      "flagged": false,
+      "reasons": [],
+      "timings": {
+        "preprocess": 96.2,
+        "ocr": 14779.9,
+        "layout": 1.9,
+        "classify": 7.0,
+        "extract": 15.5,
+        "validate": 0.1,
+        "total": 14900.6
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_bank_statement_0005",
+      "anomaly": null,
+      "errors": 2,
+      "flagged": true,
+      "reasons": [
+        "MISSING_REQUIRED"
+      ],
+      "timings": {
+        "preprocess": 86.8,
+        "ocr": 17300.3,
+        "layout": 0.3,
+        "classify": 8.6,
+        "extract": 9.5,
+        "validate": 0.2,
+        "total": 17405.7
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_bank_statement_0010",
+      "anomaly": null,
+      "errors": 1,
+      "flagged": false,
+      "reasons": [],
+      "timings": {
+        "preprocess": 79.9,
+        "ocr": 12580.5,
+        "layout": 0.4,
+        "classify": 8.2,
+        "extract": 10.1,
+        "validate": 0.1,
+        "total": 12679.2
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_bank_statement_0016",
+      "anomaly": "missing",
+      "errors": 1,
+      "flagged": true,
+      "reasons": [
+        "LOW_CONFIDENCE"
+      ],
+      "timings": {
+        "preprocess": 72.1,
+        "ocr": 9949.9,
+        "layout": 0.3,
+        "classify": 9.1,
+        "extract": 11.6,
+        "validate": 0.1,
+        "total": 10043.1
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_bank_statement_0022",
+      "anomaly": null,
+      "errors": 1,
+      "flagged": false,
+      "reasons": [],
+      "timings": {
+        "preprocess": 79.2,
+        "ocr": 12267.4,
+        "layout": 0.4,
+        "classify": 7.5,
+        "extract": 14.4,
+        "validate": 0.1,
+        "total": 12369.0
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_bank_statement_0027",
+      "anomaly": null,
+      "errors": 1,
+      "flagged": true,
+      "reasons": [
+        "FORMAT_INVALID"
+      ],
+      "timings": {
+        "preprocess": 74.9,
+        "ocr": 10899.4,
+        "layout": 0.5,
+        "classify": 6.4,
+        "extract": 10.8,
+        "validate": 0.1,
+        "total": 10992.1
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_bank_statement_0028",
+      "anomaly": null,
+      "errors": 1,
+      "flagged": true,
+      "reasons": [
+        "INCONSISTENT"
+      ],
+      "timings": {
+        "preprocess": 82.5,
+        "ocr": 11414.1,
+        "layout": 0.3,
+        "classify": 6.7,
+        "extract": 11.2,
+        "validate": 0.1,
+        "total": 11514.9
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_bank_statement_0029",
+      "anomaly": null,
+      "errors": 2,
+      "flagged": true,
+      "reasons": [
+        "MISSING_REQUIRED"
+      ],
+      "timings": {
+        "preprocess": 86.8,
+        "ocr": 9931.4,
+        "layout": 0.3,
+        "classify": 7.1,
+        "extract": 11.6,
+        "validate": 0.1,
+        "total": 10037.3
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_bank_statement_0031",
+      "anomaly": "missing",
+      "errors": 1,
+      "flagged": true,
+      "reasons": [
+        "LOW_CONFIDENCE"
+      ],
+      "timings": {
+        "preprocess": 84.2,
+        "ocr": 12038.1,
+        "layout": 0.4,
+        "classify": 6.9,
+        "extract": 10.3,
+        "validate": 0.1,
+        "total": 12140.0
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_bank_statement_0034",
+      "anomaly": null,
+      "errors": 1,
+      "flagged": false,
+      "reasons": [],
+      "timings": {
+        "preprocess": 79.1,
+        "ocr": 12699.8,
+        "layout": 0.3,
+        "classify": 7.0,
+        "extract": 11.7,
+        "validate": 0.1,
+        "total": 12798.0
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_bank_statement_0037",
+      "anomaly": null,
+      "errors": 1,
+      "flagged": false,
+      "reasons": [],
+      "timings": {
+        "preprocess": 96.5,
+        "ocr": 13725.8,
+        "layout": 0.5,
+        "classify": 7.6,
+        "extract": 13.7,
+        "validate": 0.1,
+        "total": 13844.2
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_bank_statement_0039",
+      "anomaly": null,
+      "errors": 1,
+      "flagged": true,
+      "reasons": [
+        "INCONSISTENT"
+      ],
+      "timings": {
+        "preprocess": 84.7,
+        "ocr": 14428.2,
+        "layout": 0.4,
+        "classify": 8.0,
+        "extract": 13.0,
+        "validate": 0.3,
+        "total": 14534.6
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_bank_statement_0040",
+      "anomaly": null,
+      "errors": 1,
+      "flagged": false,
+      "reasons": [],
+      "timings": {
+        "preprocess": 104.1,
+        "ocr": 13412.3,
+        "layout": 0.3,
+        "classify": 6.2,
+        "extract": 13.5,
+        "validate": 0.1,
+        "total": 13536.5
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_bank_statement_0046",
+      "anomaly": null,
+      "errors": 1,
+      "flagged": false,
+      "reasons": [],
+      "timings": {
+        "preprocess": 107.5,
+        "ocr": 13983.2,
+        "layout": 0.5,
+        "classify": 6.7,
+        "extract": 15.6,
+        "validate": 0.1,
+        "total": 14113.6
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_bank_statement_0049",
+      "anomaly": null,
+      "errors": 6,
+      "flagged": true,
+      "reasons": [
+        "LOW_CONFIDENCE",
+        "MISSING_REQUIRED"
+      ],
+      "timings": {
+        "preprocess": 47.1,
+        "ocr": 9746.6,
+        "layout": 0.4,
+        "classify": 6.7,
+        "extract": 9.4,
+        "validate": 0.1,
+        "total": 9810.3
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_bank_statement_0050",
+      "anomaly": null,
+      "errors": 1,
+      "flagged": false,
+      "reasons": [],
+      "timings": {
+        "preprocess": 71.9,
+        "ocr": 10495.0,
+        "layout": 0.3,
+        "classify": 8.0,
+        "extract": 10.4,
+        "validate": 0.0,
+        "total": 10585.6
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_bank_statement_0054",
+      "anomaly": null,
+      "errors": 1,
+      "flagged": true,
+      "reasons": [
+        "INCONSISTENT"
+      ],
+      "timings": {
+        "preprocess": 105.5,
+        "ocr": 13505.1,
+        "layout": 0.4,
+        "classify": 9.4,
+        "extract": 18.3,
+        "validate": 0.1,
+        "total": 13638.8
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_invoice_0002",
+      "anomaly": null,
+      "errors": 5,
+      "flagged": true,
+      "reasons": [
+        "MISSING_REQUIRED"
+      ],
+      "timings": {
+        "preprocess": 91.5,
+        "ocr": 7243.6,
+        "layout": 0.3,
+        "classify": 5.5,
+        "extract": 10.9,
+        "validate": 0.1,
+        "total": 7351.9
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_invoice_0008",
+      "anomaly": null,
+      "errors": 1,
+      "flagged": true,
+      "reasons": [
+        "MISSING_REQUIRED"
+      ],
+      "timings": {
+        "preprocess": 77.9,
+        "ocr": 7589.2,
+        "layout": 0.3,
+        "classify": 7.2,
+        "extract": 10.3,
+        "validate": 0.1,
+        "total": 7685.0
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_invoice_0014",
+      "anomaly": null,
+      "errors": 5,
+      "flagged": true,
+      "reasons": [
+        "INCONSISTENT",
+        "MISSING_REQUIRED"
+      ],
+      "timings": {
+        "preprocess": 97.6,
+        "ocr": 7928.7,
+        "layout": 0.3,
+        "classify": 5.2,
+        "extract": 13.4,
+        "validate": 0.1,
+        "total": 8045.3
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_invoice_0016",
+      "anomaly": null,
+      "errors": 1,
+      "flagged": true,
+      "reasons": [
+        "INCONSISTENT",
+        "MISSING_REQUIRED"
+      ],
+      "timings": {
+        "preprocess": 83.4,
+        "ocr": 6843.5,
+        "layout": 0.3,
+        "classify": 4.7,
+        "extract": 10.1,
+        "validate": 0.1,
+        "total": 6942.1
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_invoice_0028",
+      "anomaly": null,
+      "errors": 1,
+      "flagged": true,
+      "reasons": [
+        "INCONSISTENT"
+      ],
+      "timings": {
+        "preprocess": 96.6,
+        "ocr": 7822.0,
+        "layout": 0.3,
+        "classify": 4.9,
+        "extract": 10.5,
+        "validate": 0.1,
+        "total": 7934.4
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_invoice_0031",
+      "anomaly": null,
+      "errors": 1,
+      "flagged": true,
+      "reasons": [
+        "MISSING_REQUIRED"
+      ],
+      "timings": {
+        "preprocess": 81.9,
+        "ocr": 7735.8,
+        "layout": 0.3,
+        "classify": 5.1,
+        "extract": 9.6,
+        "validate": 0.1,
+        "total": 7832.8
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_invoice_0034",
+      "anomaly": null,
+      "errors": 1,
+      "flagged": true,
+      "reasons": [
+        "INCONSISTENT",
+        "LOW_CONFIDENCE"
+      ],
+      "timings": {
+        "preprocess": 92.4,
+        "ocr": 7167.5,
+        "layout": 0.3,
+        "classify": 5.2,
+        "extract": 10.8,
+        "validate": 0.2,
+        "total": 7276.4
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_invoice_0035",
+      "anomaly": null,
+      "errors": 1,
+      "flagged": true,
+      "reasons": [
+        "MISSING_REQUIRED"
+      ],
+      "timings": {
+        "preprocess": 98.4,
+        "ocr": 7994.0,
+        "layout": 0.3,
+        "classify": 4.7,
+        "extract": 13.4,
+        "validate": 0.1,
+        "total": 8110.9
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_invoice_0051",
+      "anomaly": null,
+      "errors": 1,
+      "flagged": true,
+      "reasons": [
+        "INCONSISTENT"
+      ],
+      "timings": {
+        "preprocess": 77.2,
+        "ocr": 5455.0,
+        "layout": 0.2,
+        "classify": 4.5,
+        "extract": 8.4,
+        "validate": 0.1,
+        "total": 5545.4
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_invoice_0053",
+      "anomaly": null,
+      "errors": 4,
+      "flagged": true,
+      "reasons": [
+        "INCONSISTENT",
+        "MISSING_REQUIRED"
+      ],
+      "timings": {
+        "preprocess": 110.7,
+        "ocr": 6531.5,
+        "layout": 0.3,
+        "classify": 4.0,
+        "extract": 8.4,
+        "validate": 0.1,
+        "total": 6655.0
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_payslip_0000",
+      "anomaly": null,
+      "errors": 1,
+      "flagged": true,
+      "reasons": [
+        "MISSING_REQUIRED"
+      ],
+      "timings": {
+        "preprocess": 82.9,
+        "ocr": 6915.4,
+        "layout": 0.2,
+        "classify": 5.3,
+        "extract": 10.0,
+        "validate": 0.1,
+        "total": 7013.9
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_payslip_0002",
+      "anomaly": "inconsistent",
+      "errors": 1,
+      "flagged": true,
+      "reasons": [
+        "INCONSISTENT",
+        "MISSING_REQUIRED"
+      ],
+      "timings": {
+        "preprocess": 95.8,
+        "ocr": 6981.0,
+        "layout": 0.3,
+        "classify": 4.9,
+        "extract": 12.2,
+        "validate": 0.1,
+        "total": 7094.3
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_payslip_0004",
+      "anomaly": "missing",
+      "errors": 1,
+      "flagged": true,
+      "reasons": [
+        "LOW_CONFIDENCE"
+      ],
+      "timings": {
+        "preprocess": 88.9,
+        "ocr": 7408.0,
+        "layout": 0.3,
+        "classify": 4.3,
+        "extract": 10.0,
+        "validate": 0.1,
+        "total": 7511.6
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_payslip_0008",
+      "anomaly": null,
+      "errors": 1,
+      "flagged": true,
+      "reasons": [
+        "MISSING_REQUIRED"
+      ],
+      "timings": {
+        "preprocess": 100.5,
+        "ocr": 7068.9,
+        "layout": 0.3,
+        "classify": 4.5,
+        "extract": 10.4,
+        "validate": 0.1,
+        "total": 7184.7
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_payslip_0014",
+      "anomaly": "inconsistent",
+      "errors": 1,
+      "flagged": true,
+      "reasons": [
+        "INCONSISTENT",
+        "MISSING_REQUIRED"
+      ],
+      "timings": {
+        "preprocess": 90.7,
+        "ocr": 7153.7,
+        "layout": 0.3,
+        "classify": 4.7,
+        "extract": 9.2,
+        "validate": 0.1,
+        "total": 7258.7
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_payslip_0023",
+      "anomaly": "inconsistent",
+      "errors": 1,
+      "flagged": true,
+      "reasons": [
+        "INCONSISTENT",
+        "MISSING_REQUIRED"
+      ],
+      "timings": {
+        "preprocess": 88.6,
+        "ocr": 6727.8,
+        "layout": 0.2,
+        "classify": 4.4,
+        "extract": 15.4,
+        "validate": 0.1,
+        "total": 6836.5
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_payslip_0035",
+      "anomaly": null,
+      "errors": 1,
+      "flagged": true,
+      "reasons": [
+        "MISSING_REQUIRED"
+      ],
+      "timings": {
+        "preprocess": 93.8,
+        "ocr": 7843.9,
+        "layout": 0.3,
+        "classify": 4.7,
+        "extract": 13.5,
+        "validate": 0.1,
+        "total": 7956.3
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_payslip_0045",
+      "anomaly": "missing",
+      "errors": 1,
+      "flagged": true,
+      "reasons": [
+        "LOW_CONFIDENCE"
+      ],
+      "timings": {
+        "preprocess": 78.5,
+        "ocr": 7505.0,
+        "layout": 0.3,
+        "classify": 4.5,
+        "extract": 10.6,
+        "validate": 0.1,
+        "total": 7599.0
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_payslip_0050",
+      "anomaly": null,
+      "errors": 1,
+      "flagged": true,
+      "reasons": [
+        "MISSING_REQUIRED"
+      ],
+      "timings": {
+        "preprocess": 83.7,
+        "ocr": 6693.4,
+        "layout": 0.3,
+        "classify": 4.5,
+        "extract": 9.5,
+        "validate": 0.1,
+        "total": 6791.5
+      },
+      "class_ok": true
+    },
+    {
+      "doc_id": "test_payslip_0053",
+      "anomaly": null,
+      "errors": 1,
+      "flagged": true,
+      "reasons": [
+        "MISSING_REQUIRED"
+      ],
+      "timings": {
+        "preprocess": 96.7,
+        "ocr": 7118.0,
+        "layout": 0.3,
+        "classify": 4.3,
+        "extract": 10.5,
+        "validate": 0.1,
+        "total": 7229.9
+      },
+      "class_ok": true
+    }
+  ]
+}

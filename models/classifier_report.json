@@ -1,0 +1,46 @@
+{
+  "train_docs": 510,
+  "val_docs": 90,
+  "train_texts": 2040,
+  "tfidf_logreg": {
+    "val_macro_f1": 1.0,
+    "train_seconds": 2.5
+  },
+  "hf_transformer": {
+    "base_model": "google/bert_uncased_L-2_H-128_A-2",
+    "best_val_macro_f1": 1.0,
+    "history": [
+      {
+        "epoch": 1,
+        "train_loss": 0.836,
+        "val_macro_f1": 1.0
+      },
+      {
+        "epoch": 2,
+        "train_loss": 0.064,
+        "val_macro_f1": 1.0
+      },
+      {
+        "epoch": 3,
+        "train_loss": 0.0189,
+        "val_macro_f1": 1.0
+      },
+      {
+        "epoch": 4,
+        "train_loss": 0.0121,
+        "val_macro_f1": 1.0
+      },
+      {
+        "epoch": 5,
+        "train_loss": 0.01,
+        "val_macro_f1": 1.0
+      },
+      {
+        "epoch": 6,
+        "train_loss": 0.0094,
+        "val_macro_f1": 1.0
+      }
+    ],
+    "train_seconds": 203.8
+  }
+}

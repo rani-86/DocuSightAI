@@ -1,0 +1,213 @@
+{
+  "doc_id": "6e79755fc42c",
+  "doc_type": "invoice",
+  "doc_type_confidence": 0.8248,
+  "fields": {
+    "invoice_number": {
+      "name": "invoice_number",
+      "value": "INV-2026-6028",
+      "raw_text": "INV-2026-6028",
+      "confidence": 0.9995,
+      "bbox": [
+        704,
+        110,
+        823,
+        134
+      ],
+      "method": "same_segment"
+    },
+    "invoice_date": {
+      "name": "invoice_date",
+      "value": "2026-06-08",
+      "raw_text": "08/06/2026",
+      "confidence": 0.9976,
+      "bbox": [
+        687,
+        146,
+        775,
+        174
+      ],
+      "method": "same_segment"
+    },
+    "vendor_name": {
+      "name": "vendor_name",
+      "value": "Nimbus Supplies Co",
+      "raw_text": "Nimbus Supplies Co",
+      "confidence": 0.9864,
+      "bbox": [
+        227,
+        215,
+        396,
+        243
+      ],
+      "method": "right"
+    },
+    "gstin": {
+      "name": "gstin",
+      "value": "22SABPV6444S5Z4",
+      "raw_text": "22SABPV6444S5Z4",
+      "confidence": 0.9989,
+      "bbox": [
+        227,
+        254,
+        383,
+        280
+      ],
+      "method": "right"
+    },
+    "subtotal": {
+      "name": "subtotal",
+      "value": "121301.44",
+      "raw_text": "1,21,301.44",
+      "confidence": 0.9997,
+      "bbox": [
+        831,
+        580,
+        935,
+        615
+      ],
+      "method": "right"
+    },
+    "tax_amount": {
+      "name": "tax_amount",
+      "value": "21834.26",
+      "raw_text": "21,834.26",
+      "confidence": 0.9999,
+      "bbox": [
+        847,
+        621,
+        934,
+        650
+      ],
+      "method": "right"
+    },
+    "total_amount": {
+      "name": "total_amount",
+      "value": "141226.52",
+      "raw_text": "1,41,226.52",
+      "confidence": 0.9583,
+      "bbox": [
+        831,
+        658,
+        933,
+        690
+      ],
+      "method": "right"
+    }
+  },
+  "tables": [
+    {
+      "columns": [
+        "item",
+        "qty",
+        "unit_price",
+        "amount"
+      ],
+      "rows": [
+        {
+          "cells": {
+            "item": "Webcam HD",
+            "qty": "6.00",
+            "unit_price": "877.16",
+            "amount": "5262.96"
+          },
+          "bbox": [
+            65,
+            412,
+            935,
+            448
+          ],
+          "confidence": 0.9968
+        },
+        {
+          "cells": {
+            "item": "Notebook Pack",
+            "qty": "12.00",
+            "unit_price": "5610.48",
+            "amount": "67325.76"
+          },
+          "bbox": [
+            68,
+            451,
+            934,
+            486
+          ],
+          "confidence": 0.9616
+        },
+        {
+          "cells": {
+            "item": "Extension Board",
+            "qty": "10.00",
+            "unit_price": "3023.82",
+            "amount": "30238.20"
+          },
+          "bbox": [
+            68,
+            488,
+            934,
+            524
+          ],
+          "confidence": 0.9897
+        },
+        {
+          "cells": {
+            "item": "Stapler Heavy",
+            "qty": "2.00",
+            "unit_price": "9237.26",
+            "amount": "18474.52"
+          },
+          "bbox": [
+            63,
+            525,
+            935,
+            563
+          ],
+          "confidence": 0.9398
+        }
+      ],
+      "bbox": [
+        63,
+        372,
+        935,
+        563
+      ],
+      "strategy": "header_anchored"
+    }
+  ],
+  "issues": [
+    {
+      "code": "INCONSISTENT",
+      "field": "total_amount",
+      "severity": "error",
+      "message": "subtotal + tax != total",
+      "bbox": [
+        831,
+        658,
+        933,
+        690
+      ]
+    }
+  ],
+  "needs_review": true,
+  "review_reasons": [
+    "INCONSISTENT"
+  ],
+  "ocr_engine": "paddleocr",
+  "preprocessing": [
+    "clahe",
+    "adaptive_threshold+morph_open"
+  ],
+  "image_size": [
+    1000,
+    1300
+  ],
+  "timings_ms": {
+    "preprocess": 73.2,
+    "ocr": 7760.9,
+    "layout": 0.5,
+    "classify": 61.4,
+    "extract": 12.1,
+    "validate": 0.4,
+    "total": 7908.5
+  }
+}
