@@ -4,3 +4,9 @@ __pycache__/
 data/
 reports/predictions/
 reports_eval.log
+scratch/
+reports/predictions_*/
+reports/ablation/*/
+reports/ocr_cache/
+reports/quality/ocr_cache/
+reports/quality/features_*.json

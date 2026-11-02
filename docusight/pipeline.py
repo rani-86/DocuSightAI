@@ -17,7 +17,7 @@ from .layout import Line, build_layout, reading_order_text
 from .normalize import normalize
 from .ocr import OCREngine, get_engine, get_refiner
 from .preprocessing import PreprocessResult, crop_roi, preprocess
-from .schemas import ExtractedField, ExtractionResult, OCRToken
+from .schemas import ExtractedField, ExtractionResult, OCRToken, QualityInfo, Severity, ValidationIssue
 from .tables import extract_table
 from .templates import SCHEMAS
 from .validation import review_decision, validate
@@ -52,7 +52,7 @@ class DocumentPipeline:
             timings[stage] = round((time.perf_counter() - t0) * 1000, 1)
 
         with timed("preprocess"):
-            pre = preprocess(image, self.cfg.max_side)
+            pre = preprocess(image, self.cfg.max_side, mode=self.cfg.diqa_mode, disable=self.cfg.preprocess_disable)
         with timed("ocr"):
             tokens = self.engine(pre.image)
         with timed("layout"):
@@ -75,6 +75,11 @@ class DocumentPipeline:
                 self._refine(pre, fields, schema)
         with timed("validate"):
             issues = validate(label, conf, fields, tables)
+            quality = QualityInfo(**pre.qinfo) if pre.qinfo else None
+            if quality is not None and quality.decision == "retake":
+                # Never blocks extraction: the page is still read, but a human must look at it.
+                issues.append(ValidationIssue(code="IMAGE_QUALITY", severity=Severity.warning,
+                                              message="Retake recommended: " + "; ".join(quality.reasons)))
             needs_review, reasons = review_decision(issues)
         timings["total"] = round(sum(timings.values()), 1)
 
@@ -91,6 +96,7 @@ class DocumentPipeline:
             preprocessing=pre.steps,
             image_size=(pre.image.shape[1], pre.image.shape[0]),
             timings_ms=timings,
+            quality=quality,
         )
         if return_artifacts:
             return result, PipelineArtifacts(pre, tokens, lines, text, scores)

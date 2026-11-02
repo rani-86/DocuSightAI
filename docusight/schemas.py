@@ -66,11 +66,23 @@ class Severity(str, Enum):
 
 
 class ValidationIssue(BaseModel):
-    code: str  # MISSING_REQUIRED | LOW_CONFIDENCE | FORMAT_INVALID | INCONSISTENT | LOW_CLASS_CONFIDENCE
+    code: str  # MISSING_REQUIRED | LOW_CONFIDENCE | FORMAT_INVALID | INCONSISTENT | LOW_CLASS_CONFIDENCE | IMAGE_QUALITY
     field: Optional[str] = None
     severity: Severity
     message: str
     bbox: Optional[BBox] = None
+
+
+class QualityInfo(BaseModel):
+    """Image-quality assessment (additive; absent in legacy mode)."""
+
+    decision: str = Field(..., description="accept | enhance | retake")
+    reasons: list[str] = []
+    steps_applied: list[str] = Field([], description="enhancement steps that were run (denoise, deblur, despike, clahe)")
+    scores: dict[str, Optional[float]] = {}
+    noise_types: list[str] = Field([], description="gaussian | salt_pepper | jpeg_blocking | periodic | none")
+    noise_hints: dict[str, Optional[float]] = {}
+    thresholds_source: Optional[str] = None
 
 
 class ExtractionResult(BaseModel):
@@ -86,3 +98,4 @@ class ExtractionResult(BaseModel):
     preprocessing: list[str] = []
     image_size: tuple[int, int] = (0, 0)
     timings_ms: dict[str, float] = {}
+    quality: Optional[QualityInfo] = None

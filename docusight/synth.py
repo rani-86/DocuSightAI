@@ -62,6 +62,16 @@ MONTH_FULL = ["January", "February", "March", "April", "May", "June", "July", "A
               "November", "December"]
 
 
+# Calibration-only vocabulary: used by split="calib" so quality-calibration pages share no entity with train or test.
+CALIB_FIRST = ["Zoya", "Omkar", "Fatima", "Jagdish", "Revathi", "Tarun", "Mallika", "Bhaskar", "Gayatri", "Prakash",
+               "Sulochana", "Yusuf", "Nirmala", "Rajat", "Charulata", "Dinesh", "Usha", "Vinod", "Hema", "Sameer"]
+CALIB_LAST = ["Bhandari", "Trivedi", "Rastogi", "Venkatesh", "Acharya", "Kohli", "Lal", "Parekh", "Srinivasan", "Talwar",
+              "Wagh", "Zaveri", "Anand", "Biswas", "Chatterjee", "Dalal", "Eswaran", "Gokhale", "Hiremath", "Jaiswal"]
+CALIB_COMPANIES = ["Aurora", "Basalt", "Cobalt", "Driftwood", "Ember", "Falcon", "Granite", "Harbor", "Indigo", "Juniper"]
+CALIB_ITEMS = ["Stand Fan", "Label Printer", "Barcode Scanner", "Office Sofa", "Paper Trimmer", "Conference Phone",
+               "Cable Organizer", "Monitor Arm", "Bookshelf Unit", "Power Strip", "Document Scanner", "Air Purifier"]
+
+
 def _split_vocab(vocab: list[str], split: str) -> list[str]:
     """Deterministic, disjoint halves of a vocabulary for train vs test."""
     keep = [v for v in vocab if (int(hashlib.md5(v.encode()).hexdigest(), 16) % 3 == 0) == (split == "test")]
@@ -210,10 +220,13 @@ def draw_table(c: Canvas, x0: int, y: int, cols: list[tuple[str, int, str]], row
 class Gen:
     def __init__(self, rng: random.Random, split: str):
         self.rng = rng
-        self.first = _split_vocab(FIRST, split)
-        self.last = _split_vocab(LAST, split)
-        self.companies = _split_vocab(COMPANIES, split)
-        self.items = _split_vocab(ITEMS, split)
+        if split == "calib":
+            self.first, self.last, self.companies, self.items = CALIB_FIRST, CALIB_LAST, CALIB_COMPANIES, CALIB_ITEMS
+        else:
+            self.first = _split_vocab(FIRST, split)
+            self.last = _split_vocab(LAST, split)
+            self.companies = _split_vocab(COMPANIES, split)
+            self.items = _split_vocab(ITEMS, split)
 
     def person(self) -> tuple[str, str]:
         last = self.rng.choice(self.last)
@@ -491,6 +504,117 @@ def _perspective_coeffs(src, dst):
         a.append([0, 0, 0, x, y, 1, -v * x, -v * y])
     b = np.array(dst).reshape(8)
     return np.linalg.solve(np.array(a, dtype=float), b).tolist()
+
+
+# ------------------------------------------------- controlled degradations
+# Optional single-purpose operators used to build quality-calibration sets with *known* parameters.
+# They never touch the RNG state used by degrade()/generate(), so existing data stays reproducible.
+# All operate on float32 grayscale arrays in [0, 255] and return float32 (clip + cast at the end).
+
+def op_gauss_noise(a: np.ndarray, sigma: float, rng: np.random.Generator) -> np.ndarray:
+    return a + rng.normal(0.0, sigma, a.shape).astype(np.float32)
+
+
+def op_poisson_noise(a: np.ndarray, peak: float, rng: np.random.Generator) -> np.ndarray:
+    """Shot noise (low light). `peak` = expected photon count at full white; std on level L is sqrt(255 L / peak)."""
+    return rng.poisson(np.clip(a, 0, 255) / 255.0 * peak).astype(np.float32) / peak * 255.0
+
+
+def op_salt_pepper(a: np.ndarray, density: float, rng: np.random.Generator) -> np.ndarray:
+    out = a.copy()
+    r = rng.random(a.shape)
+    out[r < density / 2] = 0.0
+    out[(r >= density / 2) & (r < density)] = 255.0
+    return out
+
+
+def op_gauss_blur(a: np.ndarray, sigma: float) -> np.ndarray:
+    import cv2
+
+    return cv2.GaussianBlur(a, (0, 0), sigma) if sigma > 0 else a
+
+
+def op_motion_blur(a: np.ndarray, length: int, angle_deg: float) -> np.ndarray:
+    import cv2
+
+    k = np.zeros((length, length), np.float32)
+    k[length // 2, :] = 1.0
+    m = cv2.getRotationMatrix2D((length / 2 - 0.5, length / 2 - 0.5), angle_deg, 1.0)
+    k = cv2.warpAffine(k, m, (length, length))
+    return cv2.filter2D(a, -1, k / max(k.sum(), 1e-6), borderType=cv2.BORDER_REFLECT)
+
+
+def op_shadow(a: np.ndarray, strength: float, angle_deg: float) -> np.ndarray:
+    """Linear illumination ramp: brightness goes from 1.0 to (1 - strength) across the page along `angle_deg`."""
+    h, w = a.shape
+    yy, xx = np.mgrid[:h, :w].astype(np.float32)
+    t = xx * np.cos(np.radians(angle_deg)) + yy * np.sin(np.radians(angle_deg))
+    t = (t - t.min()) / max(1e-6, t.max() - t.min())
+    return a * (1.0 - strength * t)
+
+
+def op_glare(a: np.ndarray, cx: float, cy: float, radius_frac: float, strength: float) -> np.ndarray:
+    """Additive Gaussian hot-spot (flash / window reflection). strength >= 1 blows the centre out to pure white."""
+    h, w = a.shape
+    yy, xx = np.mgrid[:h, :w].astype(np.float32)
+    sig = radius_frac * max(h, w)
+    return a + strength * 255.0 * np.exp(-((xx - cx * w) ** 2 + (yy - cy * h) ** 2) / (2 * sig ** 2))
+
+
+def op_lowres(a: np.ndarray, scale: float) -> np.ndarray:
+    import cv2
+
+    return cv2.resize(a, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+
+
+def op_periodic(a: np.ndarray, amplitude: float, period_px: float, angle_deg: float) -> np.ndarray:
+    h, w = a.shape
+    yy, xx = np.mgrid[:h, :w].astype(np.float32)
+    t = xx * np.cos(np.radians(angle_deg)) + yy * np.sin(np.radians(angle_deg))
+    return a + amplitude * np.sin(2 * np.pi * t / period_px)
+
+
+def op_gain(a: np.ndarray, factor: float) -> np.ndarray:
+    """Global exposure change (factor < 1 = under-exposed / dark page)."""
+    return a * factor
+
+
+def op_jpeg(a: np.ndarray, quality: int) -> np.ndarray:
+    import cv2
+
+    ok, buf = cv2.imencode(".jpg", np.clip(a, 0, 255).astype(np.uint8), [cv2.IMWRITE_JPEG_QUALITY, int(quality)])
+    return cv2.imdecode(buf, cv2.IMREAD_GRAYSCALE).astype(np.float32)
+
+
+CONTROLLED_OPS = {"gauss_noise": op_gauss_noise, "poisson_noise": op_poisson_noise, "salt_pepper": op_salt_pepper,
+                  "gauss_blur": op_gauss_blur, "motion_blur": op_motion_blur, "shadow": op_shadow, "glare": op_glare,
+                  "lowres": op_lowres, "periodic": op_periodic, "jpeg": op_jpeg, "gain": op_gain}
+_NEEDS_RNG = {"gauss_noise", "poisson_noise", "salt_pepper"}
+
+
+def apply_controlled(gray: np.ndarray, ops: list[tuple[str, dict]], seed: int) -> np.ndarray:
+    """Apply a recipe [(op_name, params), ...] in order and return a uint8 image. Deterministic given `seed`."""
+    rng = np.random.default_rng(seed)
+    a = gray.astype(np.float32)
+    for name, params in ops:
+        a = CONTROLLED_OPS[name](a, **params, **({"rng": rng} if name in _NEEDS_RNG else {}))
+    return np.clip(a, 0, 255).astype(np.uint8)
+
+
+def dense_text_page(gen: "Gen", size: int):
+    """A page filled edge to edge with text lines - the worst case for estimators that assume mostly-blank paper."""
+    r = gen.rng
+    c = gen.canvas()
+    c.size = size
+    words = gen.first + gen.last + gen.items + [f"{r.randint(100, 99999):,}.{r.randint(0, 99):02d}" for _ in range(40)]
+    y = 36
+    while y < c.h - 50:
+        line = ""
+        while len(line) < c.w // (size * 0.52) - 14:
+            line += r.choice(words) + " "
+        c.text(36, y, line.strip())
+        y += int(size * 1.5)
+    return c, {}, []
 
 
 # --------------------------------------------------------------- dataset

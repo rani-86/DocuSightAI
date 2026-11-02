@@ -113,6 +113,37 @@ def _token(text: str, score: float, poly) -> OCRToken:
     return OCRToken(text=str(text).strip(), bbox=(int(x0), int(y0), int(x1), int(y1)), confidence=float(score))
 
 
+class CachedEngine:
+    """Disk cache around any OCR engine, keyed by sha1(pixels) + engine name.
+
+    Used by the evaluation / ablation scripts: PaddleOCR costs ~7 s per page on CPU, and many ablation configurations leave a given page's
+    pixels unchanged (e.g. 'denoise off' on a page that was never denoised), so keying on the *preprocessed image* lets those runs reuse the
+    result instead of re-running OCR. Not used by the API.
+    """
+
+    def __init__(self, engine: OCREngine, cache_dir):
+        from pathlib import Path
+
+        self.engine, self.dir = engine, Path(cache_dir)
+        self.dir.mkdir(parents=True, exist_ok=True)
+        self.name, self.phrase_level = engine.name, engine.phrase_level
+        self.hits = self.misses = 0
+
+    def __call__(self, image: np.ndarray) -> list[OCRToken]:
+        import hashlib
+        import json
+
+        key = hashlib.sha1(np.ascontiguousarray(image).tobytes() + str(image.shape).encode()).hexdigest()[:20]
+        path = self.dir / f"{self.name}_{key}.json"
+        if path.exists():
+            self.hits += 1
+            return [OCRToken(**t) for t in json.loads(path.read_text())]
+        self.misses += 1
+        tokens = self.engine(image)
+        path.write_text(json.dumps([t.model_dump(mode="json") for t in tokens]))
+        return tokens
+
+
 @lru_cache(maxsize=4)
 def get_engine(name: str = "paddle") -> OCREngine:
     if name == "paddle":

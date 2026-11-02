@@ -2,7 +2,9 @@
 
 Every step is conditional on a measured quality signal so clean scans are not
 degraded by unnecessary filtering. The list of steps actually applied is
-returned so it can be logged with each prediction.
+returned so it can be logged with each prediction. See docusight/quality.py for the
+estimators and the accept / enhance / retake decision (mode "v2"); `blur_score` and
+`noise_score` below are the legacy whole-page estimators, kept for comparison.
 """
 from __future__ import annotations
 
@@ -11,6 +13,7 @@ from dataclasses import dataclass, field
 import cv2
 import numpy as np
 
+from . import quality as Q
 from .schemas import BBox
 
 
@@ -22,6 +25,7 @@ class PreprocessResult:
     steps: list[str] = field(default_factory=list)
     skew_angle: float = 0.0
     quality: dict[str, float] = field(default_factory=dict)
+    qinfo: dict | None = None  # DIQA assessment (v2 mode only): decision, reasons, scores, noise types
 
 
 # --------------------------------------------------------------------------- io
@@ -172,41 +176,139 @@ def normalize_size(img: np.ndarray, max_side: int) -> np.ndarray:
 
 # ---------------------------------------------------------------- pipeline
 
-def preprocess(img: np.ndarray, max_side: int = 1600) -> PreprocessResult:
-    steps: list[str] = []
-    img = normalize_size(img, max_side)
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) if img.ndim == 3 else img
+ENHANCE_STEPS = ("despike", "denoise", "deblur", "clahe")
+_warned_missing_thresholds = False
 
-    quad = find_document_quad(gray)
+
+def preprocess(img: np.ndarray, max_side: int = 1600, mode: str | None = None, thresholds=None,
+               disable: tuple[str, ...] | None = None) -> PreprocessResult:
+    """Preprocess one page for OCR.
+
+    mode "v2" (default): calibrated DIQA gate - measure noise -> denoise -> measure blur on the denoised page -> deblur, then
+    decide accept / enhance / retake. mode "legacy": the original hard-coded gates, kept so the pre-DIQA evaluation is
+    reproducible (also the automatic fallback if no calibrated thresholds file exists).
+    `disable` removes steps (perspective, deskew, despike, denoise, deblur, clahe) for ablation studies; defaults to
+    DOCUSIGHT_PREPROCESS_DISABLE.
+    """
+    global _warned_missing_thresholds
+    from .config import settings
+
+    mode = mode or settings.diqa_mode
+    disable = tuple(settings.preprocess_disable if disable is None else disable)
+    if mode == "legacy":
+        return _preprocess_legacy(img, max_side, disable)
+    th = thresholds or Q.load_thresholds(settings.quality_thresholds_path or None, dict(settings.quality_overrides))
+    if th is None:
+        if not _warned_missing_thresholds:
+            import logging
+
+            logging.getLogger(__name__).warning("quality_thresholds.json not found - falling back to the legacy preprocessing gates. "
+                                                "Run scripts/quality_vs_cer.py to calibrate.")
+            _warned_missing_thresholds = True
+        return _preprocess_legacy(img, max_side, disable)
+    return _preprocess_diqa(img, max_side, th, disable)
+
+
+def _to_gray(img: np.ndarray) -> np.ndarray:
+    return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) if img.ndim == 3 else img
+
+
+def _finish(gray: np.ndarray, steps: list[str], angle: float, quality: dict, **extra) -> PreprocessResult:
+    binary = binarize(gray)
+    steps.append("adaptive_threshold+morph_open")
+    return PreprocessResult(image=cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR), gray=gray, binary=binary, steps=steps, skew_angle=angle,
+                            quality=quality, **extra)
+
+
+def _geometry(img: np.ndarray, steps: list[str], disable: tuple[str, ...]) -> tuple[np.ndarray, float]:
+    gray = _to_gray(img)
+    quad = None if "perspective" in disable else find_document_quad(gray)
     if quad is not None:
         img = perspective_correct(img, quad)
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         steps.append("perspective_correct")
+    angle = 0.0
+    if "deskew" not in disable:
+        angle = estimate_skew(_to_gray(img))
+        if abs(angle) >= 0.3:
+            img = rotate(img, angle)
+            steps.append(f"deskew({angle:+.1f}deg)")
+    return img, angle
 
-    angle = estimate_skew(gray)
-    if abs(angle) >= 0.3:
-        img = rotate(img, angle)
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        steps.append(f"deskew({angle:+.1f}deg)")
 
+def _preprocess_legacy(img: np.ndarray, max_side: int, disable: tuple[str, ...]) -> PreprocessResult:
+    """The original gates: noise > 4 -> denoise, blur < 300 -> deblur, contrast < 150 -> CLAHE (all measured before enhancement)."""
+    steps: list[str] = []
+    img = normalize_size(img, max_side)
+    img, angle = _geometry(img, steps, disable)
+    gray = _to_gray(img)
     quality = {"blur": blur_score(gray), "noise": noise_score(gray), "contrast": contrast_score(gray)}
-    if quality["noise"] > 4.0:
+    if quality["noise"] > 4.0 and "denoise" not in disable:
         gray = denoise(gray, quality["noise"])
         steps.append("denoise")
-    if quality["blur"] < 300:
+    if quality["blur"] < 300 and "deblur" not in disable:
         gray = deblur(gray)
         steps.append("deblur")
-    if quality["contrast"] < 150:
+    if quality["contrast"] < 150 and "clahe" not in disable:
+        gray = enhance_contrast(gray)
+        steps.append("clahe")
+    return _finish(gray, steps, angle, quality)
+
+
+def _preprocess_diqa(img: np.ndarray, max_side: int, th, disable: tuple[str, ...]) -> PreprocessResult:
+    """Calibrated gate. Measurement points are chosen so each estimator sees the signal it was validated on:
+
+    * JPEG blockiness on the *decoded input* (any resampling destroys the 8x8 grid);
+    * noise sigma, impulse fraction and periodic peak after size normalisation but *before* rotation / perspective warp, which
+      interpolate and would smooth the noise;
+    * blur on the page that will be OCR'd, *after* denoising (noise inflates gradient-based sharpness);
+    * exposure and text height on the geometrically corrected page (the photo background is cropped away).
+    """
+    steps: list[str] = []
+    raw_gray = _to_gray(img)
+    blockiness = Q.jpeg_blockiness(raw_gray)
+    raw_w = raw_gray.shape[1]
+    img = normalize_size(img, max_side)
+    scale = img.shape[1] / raw_w
+    gray = _to_gray(img)
+
+    flat = Q.flat_tiles(gray)
+    noise = Q.noise_sigma(gray, flat)
+    impulses, n_flat_px = Q.impulse_fraction(flat, gray.shape)
+    hints = Q.NoiseHints(impulse_fraction=impulses, jpeg_blockiness=blockiness, periodic_peak=Q.periodic_peak(gray, flat),
+                         n_flat_pixels=n_flat_px)
+
+    if th.impulse_enhance is not None and impulses > th.impulse_enhance and "despike" not in disable:
+        gray = Q.despike(gray, noise.sigma)[1]  # before any resampling, while impulses are still isolated
+        img = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
+        steps.append("despike")
+
+    img, angle = _geometry(img, steps, disable)
+    gray = _to_gray(img)
+    quality = {"blur": blur_score(gray), "noise": noise_score(gray), "contrast": contrast_score(gray)}  # legacy values, for comparison
+
+    if th.noise_enhance is not None and noise.measurable and noise.sigma > th.noise_enhance and "denoise" not in disable:
+        gray = denoise(gray, noise.sigma)
+        steps.append("denoise")
+    blur = Q.blur_metrics(gray)  # measured AFTER denoising
+    if th.blur_enhance is not None and not np.isnan(blur.edge_width) and blur.edge_width > th.blur_enhance and "deblur" not in disable:
+        gray = deblur(gray)
+        steps.append("deblur")
+    exposure = Q.exposure_metrics(gray)
+    text_h = Q.text_height(gray).text_height_px / max(1.0, scale)  # effective (native) glyph height: up-scaling adds no information
+    if th.clahe_contrast_below is not None and exposure.contrast < th.clahe_contrast_below and "clahe" not in disable:
         gray = enhance_contrast(gray)
         steps.append("clahe")
 
-    binary = binarize(gray)
-    steps.append("adaptive_threshold+morph_open")
-    return PreprocessResult(
-        image=cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR),
-        gray=gray,
-        binary=binary,
-        steps=steps,
-        skew_angle=angle,
-        quality=quality,
-    )
+    decision = Q.decide(noise, hints, blur, exposure, text_h, th, applied=[s for s in steps if s in ENHANCE_STEPS])
+    quality.update({"noise_sigma": noise.sigma, "edge_width": blur.edge_width})
+    qinfo = {
+        "decision": decision.decision, "reasons": decision.reasons, "steps_applied": decision.enhance,
+        "scores": {"noise_sigma": noise.sigma, "noise_measurable": float(noise.measurable), "edge_width": None if np.isnan(blur.edge_width) else blur.edge_width,
+                   "tenengrad_norm": blur.tenengrad_norm, "text_height_px": text_h, "paper_level": exposure.paper_level,
+                   "illumination_unevenness": exposure.unevenness, "glare_fraction": exposure.glare_fraction, "contrast": exposure.contrast,
+                   "clipped_highlights": exposure.clipped_high},
+        "noise_types": Q.suspected_noise_types(noise.sigma if noise.measurable else 0.0, hints, th),
+        "noise_hints": {"impulse_fraction": hints.impulse_fraction, "jpeg_blockiness": hints.jpeg_blockiness, "periodic_peak": hints.periodic_peak},
+        "thresholds_source": th.source,
+    }
+    return _finish(gray, steps, angle, quality, qinfo=qinfo)
